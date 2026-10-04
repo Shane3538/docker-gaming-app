@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Cyber Arena{% endblock %}
+
+{% block content %}
+<div class="dashboard-shell">
+  <header class="topbar glow-card">
+    <div>
+      <span class="brand-tag">OPERATOR</span>
+      <h2>Welcome, {{ username }}</h2>
+    </div>
+    <div class="topbar-actions">
+      <div class="score-pill">Best Score: <strong id="best-score">{{ best_score }}</strong></div>
+      <a href="{{ url_for('main.logout') }}" class="logout-btn">Logout</a>
+    </div>
+  </header>
+
+  <main class="dashboard-grid">
+    <section class="panel glow-card left-panel">
+      <div class="panel-header">
+        <h3>Mission Control</h3>
+      </div>
+
+      <div class="mission-info">
+        <p>Objective: Match all glowing nodes before the clock runs out.</p>
+        <div class="stats-row">
+          <div>
+            <span class="label">Score</span>
+            <strong id="score">0</strong>
+          </div>
+          <div>
+            <span class="label">Moves</span>
+            <strong id="moves">0</strong>
+          </div>
+          <div>
+            <span class="label">Time</span>
+            <strong id="timer">30</strong>
+          </div>
+        </div>
+      </div>
+
+      <button id="start-game" class="primary-btn">Start Mission</button>
+    </section>
+
+    <section class="panel glow-card game-panel">
+      <div id="game-board" class="game-board" aria-label="Memory game board"></div>
+    </section>
+
+    <aside class="panel glow-card right-panel">
+      <div class="panel-header">
+        <h3>Leaderboard</h3>
+      </div>
+
+      <ul class="leaderboard-list">
+        {% for entry in leaderboard %}
+        <li>
+          <span>{{ loop.index }}. {{ entry.username }}</span>
+          <strong>{{ entry.best_score }}</strong>
+        </li>
+        {% else %}
+        <li class="empty-row">No scores yet.</li>
+        {% endfor %}
+      </ul>
+    </aside>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/game.js') }}" defer></script>
+{% endblock %}

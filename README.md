@@ -1,2 +1,10 @@
-# docker-gaming-app
-A web application with login system and interactive game, fully dockerized and security tested with Trivy
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+app.db
+.env
+.DS_Store
+.idea/
+.vscode/

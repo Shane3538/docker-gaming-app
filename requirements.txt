@@ -1,0 +1,196 @@
+const symbols = ["◈", "✦", "▲", "⬢", "◆", "✧", "⬡", "●"];
+const board = document.getElementById("game-board");
+const scoreElement = document.getElementById("score");
+const movesElement = document.getElementById("moves");
+const timerElement = document.getElementById("timer");
+const bestScoreElement = document.getElementById("best-score");
+const startButton = document.getElementById("start-game");
+
+let deck = [];
+let firstCard = null;
+let secondCard = null;
+let lockBoard = false;
+let matchedPairs = 0;
+let score = 0;
+let moves = 0;
+let timeLeft = 30;
+let countdownTimer = null;
+let roundStarted = false;
+
+function shuffleCards(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function createDeck() {
+  const cardSymbols = shuffleCards([...symbols, ...symbols]);
+  deck = cardSymbols.map((symbol, index) => ({
+    id: index,
+    symbol,
+    matched: false,
+    visible: false,
+  }));
+}
+
+function renderBoard() {
+  board.innerHTML = "";
+  deck.forEach((card) => {
+    const button = document.createElement("button");
+    button.className = "memory-card hidden";
+    button.dataset.id = String(card.id);
+    button.dataset.symbol = card.symbol;
+    button.type = "button";
+    button.innerText = card.symbol;
+    button.addEventListener("click", () => handleCardClick(card.id, button));
+    board.appendChild(button);
+  });
+}
+
+function updateScoreDisplay() {
+  scoreElement.textContent = String(score);
+  movesElement.textContent = String(moves);
+  timerElement.textContent = String(timeLeft);
+}
+
+function updateBestScoreDisplay(value) {
+  bestScoreElement.textContent = String(value);
+}
+
+function handleCardClick(cardId, button) {
+  if (!roundStarted || lockBoard) return;
+
+  const card = deck.find((item) => item.id === cardId);
+  if (!card || card.matched || button.classList.contains("is-flipped")) return;
+
+  button.classList.remove("hidden");
+  button.classList.add("is-flipped");
+  card.visible = true;
+
+  if (!firstCard) {
+    firstCard = card;
+    return;
+  }
+
+  secondCard = card;
+  moves += 1;
+  updateScoreDisplay();
+
+  if (firstCard.symbol === secondCard.symbol) {
+    firstCard.matched = true;
+    secondCard.matched = true;
+    matchedPairs += 1;
+    score += 120;
+    updateScoreDisplay();
+
+    const matchedButtons = document.querySelectorAll(`.memory-card[data-symbol="${firstCard.symbol}"]`);
+    matchedButtons.forEach((el) => {
+      el.classList.add("is-matched");
+      el.disabled = true;
+    });
+
+    firstCard = null;
+    secondCard = null;
+
+    if (matchedPairs === symbols.length) {
+      finishGame();
+    }
+    return;
+  }
+
+  lockBoard = true;
+  setTimeout(() => {
+    document.querySelectorAll(".memory-card.is-flipped").forEach((el) => {
+      if (!el.classList.contains("is-matched")) {
+        el.classList.remove("is-flipped");
+        el.classList.add("hidden");
+      }
+    });
+
+    deck.forEach((item) => {
+      if (!item.matched) {
+        item.visible = false;
+      }
+    });
+
+    firstCard = null;
+    secondCard = null;
+    lockBoard = false;
+  }, 700);
+}
+
+function startTimer() {
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    timeLeft -= 1;
+    timerElement.textContent = String(timeLeft);
+
+    if (timeLeft <= 0) {
+      clearInterval(countdownTimer);
+      roundStarted = false;
+      alert("Time is up! Mission failed. Start again.");
+      startButton.disabled = false;
+      startButton.textContent = "Restart Mission";
+      lockBoard = true;
+    }
+  }, 1000);
+}
+
+function saveScoreToServer(finalScore) {
+  const formData = new FormData();
+  formData.append("score", String(finalScore));
+
+  fetch("/save_score", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        const currentBest = Number(bestScoreElement.textContent || 0);
+        if (finalScore > currentBest) {
+          updateBestScoreDisplay(finalScore);
+        }
+      }
+    })
+    .catch(() => {
+      console.error("Unable to save score");
+    });
+}
+
+function finishGame() {
+  clearInterval(countdownTimer);
+  roundStarted = false;
+  startButton.disabled = false;
+  startButton.textContent = "Play Again";
+  saveScoreToServer(score);
+  alert(`Mission complete! Final score: ${score}`);
+}
+
+function resetGame() {
+  clearInterval(countdownTimer);
+  deck = [];
+  firstCard = null;
+  secondCard = null;
+  lockBoard = false;
+  matchedPairs = 0;
+  score = 0;
+  moves = 0;
+  timeLeft = 30;
+  roundStarted = true;
+  createDeck();
+  renderBoard();
+  updateScoreDisplay();
+  startTimer();
+  startButton.disabled = true;
+  startButton.textContent = "Mission Running";
+}
+
+startButton.addEventListener("click", resetGame);
+
+updateScoreDisplay();
+createDeck();
+renderBoard();

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | Cyber Arena{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+  <div class="auth-panel glow-card">
+    <div class="brand-block">
+      <span class="brand-tag">CYBER OPS</span>
+      <h1>Access Terminal</h1>
+      <p>Enter your mission credentials and continue to the arena.</p>
+    </div>
+
+    <form method="POST" class="auth-form">
+      <label>
+        Username
+        <input type="text" name="username" placeholder="your_username" required />
+      </label>
+
+      <label>
+        Password
+        <input type="password" name="password" placeholder="••••••••" required />
+      </label>
+
+      <button type="submit" class="primary-btn">Login</button>
+    </form>
+
+    <div class="switch-link">
+      <span>No account?</span>
+      <a href="{{ url_for('main.register') }}">Create one</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

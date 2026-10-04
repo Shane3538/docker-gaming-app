@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Cyber Arena{% endblock %}
+
+{% block content %}
+<div class="auth-layout">
+  <div class="auth-panel glow-card">
+    <div class="brand-block">
+      <span class="brand-tag">NEW AGENT</span>
+      <h1>Create Profile</h1>
+      <p>Register your operator profile to join the arena.</p>
+    </div>
+
+    <form method="POST" class="auth-form">
+      <label>
+        Username
+        <input type="text" name="username" placeholder="choose a username" required />
+      </label>
+
+      <label>
+        Password
+        <input type="password" name="password" placeholder="minimum 6 characters" required />
+      </label>
+
+      <label>
+        Confirm Password
+        <input type="password" name="confirm_password" placeholder="repeat password" required />
+      </label>
+
+      <button type="submit" class="primary-btn">Register</button>
+    </form>
+
+    <div class="switch-link">
+      <span>Already registered?</span>
+      <a href="{{ url_for('main.login') }}">Login</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
